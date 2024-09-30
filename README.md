@@ -1,1 +1,1 @@
-Mine Sweeper Terminal Game
+Mine Sweeper terminal game
