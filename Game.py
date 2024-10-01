@@ -3,19 +3,29 @@
 import os
 import random
 
+u_lost = False
+
 class Tile:
+
     def __init__(self):
         self.coords = (0,0)
         self.mine = False
         self.number = 0
         self.revealed = False
+        self.flag = False
     
     def __repr__(self):
+        if self.flag == True:
+            visual = "[*]"
+            return visual
         if self.revealed == True:
-            if self.number != 0:
-                visual = f"[{self.number}]"
+            if self.mine == False:
+                if self.number != 0:
+                    visual = f"[{self.number}]"
+                else:
+                    visual = "[ ]"
             else:
-                visual = "[ ]"
+                visual = "[!]"
         else:
             visual = "[X]"
         return visual
@@ -25,6 +35,9 @@ class Tile:
         y = self.coords[1]
         if self.revealed == False:
             self.revealed = True
+            if self.mine == True:
+                global u_lost
+                u_lost = True
             if self.number == 0:
                 if (x+1, y) in tiles_dict:
                     tiles_dict[(x+1, y)].reveal()
@@ -46,12 +59,12 @@ class Tile:
 def ask_input():
     global board_size, num_mine
     os.system("clear")
-    print("Please enter a board size using this format: 4x4")
+    print("Enter a board size that is a square :)) between ≥ 3x3 and ≤ 10x10")
     board_size_str = input()
     os.system("clear")
     board_size = tuple(map(int, board_size_str.split("x")))
 
-    print("Please enter a mine number")
+    print("Enter a mine number that makes sense")
     num_mine = int(input())
     os.system("clear")
 
@@ -104,13 +117,36 @@ def print_board():
 
 def start_game():
     os.system("clear")
+    if u_lost == True:
+        print("YOU LOST")
+        print()
+        return
+    win = True
+    for key in list(tiles_dict):
+        if tiles_dict[key].mine == True and tiles_dict[key].flag != True:
+            win = False
+        if tiles_dict[key].mine == False and tiles_dict[key].reveal == False:
+            win = False
+    if win == True:
+        print("YOU WON")
+        return
+    print("Write r to reveal or f to flag")
+    print()
+    print_board()
+    print()
+    mode = input()
+    os.system("clear")
     print("Select a tile using this format: row,column")
     print()
     print_board()
     print()
     selected_tile_str = input()
     selected_tile = tuple(map(int, selected_tile_str.split(",")))
-    tiles_dict[selected_tile].reveal()
+    if mode == "r":
+        tiles_dict[selected_tile].reveal()
+    else:
+        tiles_dict[selected_tile].flag = True
+
     start_game()
 
 ask_input()
@@ -119,7 +155,3 @@ place_mines()
 create_numbers()
 find_start_tile()
 start_game()
-
-
-
-
